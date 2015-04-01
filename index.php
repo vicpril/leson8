@@ -63,24 +63,6 @@ function deleteExplanation(&$explanation, $name, $filename = 'explanation.php') 
 $explanation = array();
 $filename = 'explanation.php';
 
-if (file_exists($filename)) {
-    if (!file_get_contents($filename)) {
-        exit('Ошибка: неверный формат файла ' . $filename);
-    }
-    $explanation = unserialize(file_get_contents($filename));
-}
-
-if (isset($_GET['show'])) {
-    $show = $_GET['show'];
-    $smarty->assign('header_tpl', 'header_exp');
-    $smarty->assign('title', 'Объявление');
-} else {
-    $show = '';
-    $smarty->assign('header_tpl', 'header');
-    $smarty->assign('title', 'Доска объявлений');
-}
-$id = (isset($_GET['id'])) ? $_GET['id'] : '';
-
 $cities = array('641780' => 'Новосибирск', '641490' => 'Барабинск', '641510' => 'Бердск', '641600' => 'Искитим', '641630' => 'Колывань', '641680' => 'Краснообск', '641710' => 'Куйбышев', '641760' => 'Мошково', '641790' => 'Обь', '641800' => 'Ордынское', '641970' => 'Черепаново',);
 $categories = array(
     'Транспорт' => array('9' => 'Автомобили с пробегом', '109' => 'Новые автомобили', '14' => 'Мотоциклы и мототехника', '81' => 'Грузовики и спецтехника', '11' => 'Водный транспорт', '10' => 'Запчасти и аксессуары'),
@@ -93,10 +75,29 @@ $categories = array(
     'Хобби и отдых' => array('33' => 'Билеты и путешествия', '34' => 'Велосипеды', '83' => 'Книги и журналы', '36' => 'Коллекционирование', '38' => 'Музыкальные инструменты', '102' => 'Охота и рыбалка', '39' => 'Спорт и отдых', '103' => 'Знакомства'),
     'Животные' => array('89' => 'Собаки', '90' => 'Кошки', '91' => 'Птицы', '92' => 'Аквариум', '93' => 'Другие животные', '94' => 'Товары для животных'),
     'Для бизнеса' => array('116' => 'Готовый бизнес', '40' => 'Оборудование для бизнеса'));
-$name = (isset($explanation[$show])) ? $explanation[$show] :
-        array('private' => '0', 'seller_name' => '', 'email' => '', 'allow_mails' => '',
-    'phone' => '', 'location_id' => '', 'category_id' => '', 'title' => '', 'description' => '',
-    'price' => '0');
+
+if (file_exists($filename)) {
+    if (!file_get_contents($filename)) {
+        exit('Ошибка: неверный формат файла ' . $filename);
+    }
+    $explanation = unserialize(file_get_contents($filename));
+}
+
+if (isset($_GET['show']) && isset($explanation[$_GET['show']])) {
+    $show = $_GET['show'];
+    $smarty->assign('header_tpl', 'header_exp');
+    $smarty->assign('title', 'Объявление');
+    $smarty->assign('show', $show);
+} else {
+    $smarty->assign('header_tpl', 'header');
+    $smarty->assign('title', 'Доска объявлений');
+}
+$id = (isset($_GET['id'])) ? $_GET['id'] : '';
+
+if (isset($show) && isset($explanation[$show])){
+    $name = $explanation[$show];
+    $smarty->assign('name', $name);
+}
 
 if (isset($_GET['delete'])) {
     deleteExplanation($explanation, $_GET['delete']);
@@ -109,9 +110,6 @@ if (isset($_POST['button_add'])) {
 
 $listOfExplanations = getListOfExplanations($explanation);
 
-$smarty->assign('name', $name);
-$smarty->assign('id', $id);
-$smarty->assign('show', $show);
 $smarty->assign('private_radios', array('0' => 'Частное лицо', '1' => 'Компания'));
 $smarty->assign('cities', $cities);
 $smarty->assign('categories', $categories);
